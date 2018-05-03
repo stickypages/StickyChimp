@@ -3,7 +3,7 @@ License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 ## Description
-A new integration plugin with MailChimp. Better Syncing
+A new integration plugin with MailChimp. Better Syncing Options.
 
 ## Installation Manually
 1. Download the latest archive and extract to a folder
