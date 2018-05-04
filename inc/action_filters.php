@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 $sticky_chimp_options = get_option("sticky_chimp_options");
 
 function sticky_chimp_notice_content_saved() {

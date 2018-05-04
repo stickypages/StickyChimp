@@ -4,11 +4,11 @@
  * https://developer.mailchimp.com/documentation/mailchimp/reference/reports/advice/
  *
  * Extra Fields
- *  use in $data. 'merge_fields' => array( "FNAME"=> "Justy", "LNAME"=> "Geez" )
+ *  use in $data. 'merge_fields' => array( "FNAME"=> "Justin", "LNAME"=> "Geez" )
  *  unique fields need to be created first before assigning after
  *
- * $api_key = "6b852b63044c927a9a1210c379978960-us4";
- * $list_id = "efa48a35b3";
+ * $api_key = "xxxxxxxxxxxxxxxxxxxxx79978960-us4";
+ * $list_id = "xxxxxa35b3";
 */
 class StickyChimp
 {

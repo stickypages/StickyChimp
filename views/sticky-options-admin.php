@@ -1,3 +1,11 @@
+<?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+?>
+
 <div class="wrap">
 	<h1><?php echo __('StickyChimp', 'sticky-chimp'); ?></h1>
 </div>

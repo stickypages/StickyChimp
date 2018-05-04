@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 function _log($msg=null) {
 	$data = PHP_EOL ." ". $msg;
 

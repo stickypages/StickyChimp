@@ -17,8 +17,6 @@ if($sticky_chimp_api_key = get_option("sticky_chimp_api_key")) {
 include_once 'inc/action_filters.php';
 
 
-
-
 /**
  * Create Admin Page!
  */
