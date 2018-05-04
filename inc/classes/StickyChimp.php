@@ -27,6 +27,7 @@ class StickyChimp
 	public $response_headers;
 	public $response_body;
 	public $response_errors;
+	public $response_code;
 	public $status;
 	private $retrieve = "limited";
 
@@ -42,6 +43,25 @@ class StickyChimp
 		return $this;
 	}
 
+	public function debug() {
+		$debug = array(
+			 'api_key' => $this->api_key
+			,'list_id' => $this->list_id
+			,'id'      => $this->id
+			,'method'  => $this->method
+			,'on'      => $this->on
+			,'path'    => $this->path
+			,'body'    => $this->body
+			,'data_center'     => $this->data_center
+			,'base_url'        => $this->base_url
+			,'request_url'     => $this->request_url
+			,'request_params'  => $this->request_params
+			,'response_code'   => $this->response_code
+			,'response_errors' => $this->response_errors
+			,'response'        => $this->response
+		);
+		return $debug;
+	}
 	public function set_api_key($api_key) {
 		if(!empty($api_key)) {
 			$this->api_key = $api_key;
@@ -53,6 +73,9 @@ class StickyChimp
 			$this->list_id = $list_id;
 		}
 		return $this;
+	}
+	public function hash($value) {
+		return md5(strtolower($value));
 	}
 	public function method($method) {
 		if(!empty($method)) {
@@ -71,23 +94,33 @@ class StickyChimp
 	private function _base_url() {
 		if(!empty($this->api_key)) {
 			$this->data_center = substr($this->api_key,strpos($this->api_key,'-')+1);
-			$this->base_url    = "https://{$this->data_center}.api.mailchimp.com/3.0/lists/". $this->list_id ."/";
+			$list_id = null;
+			if(!empty($this->list_id)) {
+				$list_id = "/". $this->list_id ."/";
+			}
+			$this->base_url    = "https://{$this->data_center}.api.mailchimp.com/3.0/lists". $list_id;
 		}
 	}
 	private function _build_request() {
 		$this->request_params = array(
 			"method" => $this->method,
 			"headers" => array(
-				"Authorization" => "Basic  ". base64_encode('user:'. $this->api_key)
-			),
-			"body" => json_encode($this->body)
+				"Authorization" => "Basic ". base64_encode('user:'. $this->api_key)
+			)
 		);
+		if(!empty($this->body)) {
+			$this->request_params['body'] = json_encode($this->body);
+		}
 
 		return $this;
 	}
 	private function _build_request_url() {
 		// IE: /lists/{list_id}/merge-fields/{merge_id}
-		$this->request_url = $this->base_url . $this->on ."/". $this->id . $this->path;
+		$on = null;
+		if(!empty($this->on)) {
+			$on = $this->on ."/";
+		}
+		$this->request_url = $this->base_url . $on . $this->id . $this->path;
 		return $this;
 	}
 	public function body($body) {
@@ -105,8 +138,10 @@ class StickyChimp
 		$this->_build_request_url();
 		$this->_build_request();
 
-		$this->response = wp_remote_post($this->request_url, $this->request_params);
+		$this->response      = wp_remote_post($this->request_url, $this->request_params);
+		$this->response_code = wp_remote_retrieve_response_code($this->response);
 		$this->parse_response();
+
 		if($this->retrieve === "limited") {
 			$on = $this->on;
 			if(isset($this->response_body->$on)) {
@@ -122,9 +157,6 @@ class StickyChimp
 			$this->response_body    = json_decode(wp_remote_retrieve_body($this->response));
 			return $this->response_body;
 		}
-	}
-	public function hash($value) {
-		return md5(strtolower($value));
 	}
 
 	/* Base Functions */
@@ -170,10 +202,22 @@ class StickyChimp
 		                 ->path( $this->hash($email) )
 		                 ->request($more_plus);
 
-		if($response->status === 200 && $response->status == $status) {
+		if($this->response_code === 200) {
 			return $response;
 		} else {
-			$this->response_errors['create'] = $response;
+			$this->response_errors['create_subscriber'] = $response;
+			return $this->response;
+		}
+	}
+	public function create_field($name, $type="text") {
+		$response = $this->method( "POST" )
+		                 ->on('merge-fields')
+		                 ->request(array("name"=>$name, "type"=>$type));
+
+		if($this->response_code === 200) {
+			return $response;
+		} else {
+			$this->response_errors['create_field'] = $response;
 			return $this->response;
 		}
 	}
@@ -186,17 +230,3 @@ class StickyChimp
 		}
 	}
 }
-
-
-$chimp = new StickyChimp("6b852b63044c927a9a1210c379978960-us4", "efa48a35b3");
-
-if($_SERVER['REMOTE_ADDR'] === "50.98.107.120") {
-	#$response = $chimp->create_subscriber('lala@test.com');
-	$response = $chimp->remove_subscriber('lala@test.com');
-
-	echo $chimp->request_url;
-	echo "<pre>";
-	print_R($response);
-	echo "</pre>";
-}
-

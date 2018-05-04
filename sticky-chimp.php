@@ -9,12 +9,26 @@
  *
  */
 
-add_action('admin_menu', 'sticky_chimp_admin_actions');
-function sticky_chimp_admin_actions() {
-	add_options_page("Sticky", "Sticky", 1, "sticky", "sticky_options_page_func" );
+include_once 'inc/helpers.php';
+if($sticky_chimp_api_key = get_option("sticky_chimp_api_key")) {
+	include_once 'inc/classes/StickyChimp.php';
+	$StickyChimp = new StickyChimp($sticky_chimp_api_key);
 }
+include_once 'inc/action_filters.php';
+
+
+
+
+/**
+ * Create Admin Page!
+ */
+add_action('admin_menu', function() {
+	add_options_page("StickyChimp", "StickyChimp", 1, "sticky-chimp", "sticky_options_page_func" );
+});
 function sticky_options_page_func() {
 	global $wpdb;
 
-	include 'sticky-options-admin.php';
+	include_once 'inc/helpers.php';
+	include_once 'inc/action_filters.php';
+	include 'views/sticky-options-admin.php';
 }
