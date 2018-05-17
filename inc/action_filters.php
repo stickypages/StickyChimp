@@ -34,25 +34,12 @@ if($sticky_chimp_options['enable_woocommerce_checkout']) {
      * $order = new WC_Order( 66563 );
      * $key   = $order->get_order_key();
      */
-	add_action('woocommerce_thankyou', function($order_id) {
-	    if(!empty($order_id)) {
-		    $order       = new WC_Order( $order_id );
-		    $StickyChimp = new StickyChimp(get_option("sticky_chimp_api_key"), get_option("sticky_chimp_list_id"));
-
-		    $first_name = $order->get_billing_first_name();
-		    $last_name  = $order->get_billing_last_name();
-		    $email      = $order->get_billing_email();
-
-		    $product = "";
-		    foreach ($order->get_items() as $item_id => $item_data) {
-			    $products = $item_data->get_product();
-			    $product .= $products->get_name() ." | ";
-		    }
-		    $product_field = "MMERGE".get_option( "sticky_chimp_field_product_id" );
-
-		    $StickyChimp->create_subscriber($email, array("merge_fields"=> array("FNAME"=>$first_name, "LNAME"=>$last_name, $product_field=>$product)) );
-	    }
-	});
+	$sticky_chimp_on_actions = get_option("sticky_chimp_on_actions");
+	if(!empty($sticky_chimp_on_actions)) {
+	    foreach($sticky_chimp_on_actions as $action) {
+		    add_action($action, 'add_to_mailchimp_with_order_id');
+        }
+    }
 }
 
 if($sticky_chimp_options['remove_on_cancelled_subscription']) {
@@ -66,3 +53,27 @@ if($sticky_chimp_options['remove_on_cancelled_subscription']) {
 }
 
 
+/**
+ * add_to_mailchimp_with_order_id()
+ *
+ * @param $order_id
+ */
+function add_to_mailchimp_with_order_id($order_id) {
+	if(!empty($order_id)) {
+		$order       = new WC_Order( $order_id );
+		$StickyChimp = new StickyChimp(get_option("sticky_chimp_api_key"), get_option("sticky_chimp_list_id"));
+
+		$first_name = $order->get_billing_first_name();
+		$last_name  = $order->get_billing_last_name();
+		$email      = $order->get_billing_email();
+
+		$product = "";
+		foreach ($order->get_items() as $item_id => $item_data) {
+			$products = $item_data->get_product();
+			$product .= $products->get_name() ." | ";
+		}
+		$product_field = "MMERGE".get_option( "sticky_chimp_field_product_id" );
+
+		$StickyChimp->create_subscriber($email, array("merge_fields"=> array("FNAME"=>$first_name, "LNAME"=>$last_name, $product_field=>$product)) );
+	}
+}
